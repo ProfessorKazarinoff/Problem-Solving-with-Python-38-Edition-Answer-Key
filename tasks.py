@@ -4,7 +4,7 @@ run
 
 $ invoke build
 
-to make a pdf of all the notebooks
+to make a pdf of all the notebooks in the build/ directory
 """
 
 from pathlib import Path
@@ -16,6 +16,7 @@ from nbconvert.preprocessors import RegexRemovePreprocessor
 from nbconvert.writers import FilesWriter
 from pandocfilters import applyJSONFilters, RawInline
 import re
+import shutil
 
 @task
 def build(c):
@@ -23,6 +24,9 @@ def build(c):
     nb_node = merge_notebooks(nb_path_lst)
     output_file_path = Path(Path.cwd(),'build','out.tex')
     export_tex(nb_node, output_file_path)
+    src_images_dir_path = Path(Path.cwd(),'images')
+    dst_images_dir_path = Path(Path.cwd(),'build','images')
+    copy_images_dir(src_images_dir_path,dst_images_dir_path)
 
 
 def merge_notebooks(nb_path_lst):
@@ -89,3 +93,12 @@ def convert_link(key, val, fmt, meta):
 
 def convert_links(source):
     return applyJSONFilters([convert_link], source)
+
+def copy_images_dir(src_images_dir_path=None, dst_images_dir_path=None):
+    if not src_images_dir_path:
+        src_images_dir_path = Path(Path.cwd(),'images')
+    if not dst_images_dir_path:
+        dst_images_dir_path = Path(Path.cwd(),'build','images')
+    if dst_images_dir_path.exists():
+        shutil.rmtree(dst_images_dir_path)
+    shutil.copytree(src_images_dir_path, dst_images_dir_path)
